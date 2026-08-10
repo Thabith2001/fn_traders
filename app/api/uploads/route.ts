@@ -24,6 +24,9 @@ export async function POST(request: Request) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
+        console.log('Image size:', file.size);
+        console.log('Image type:', file.type);
+
         const result = await new Promise<{
             secure_url: string;
             public_id: string;
@@ -33,17 +36,26 @@ export async function POST(request: Request) {
                     {
                         folder: 'fn_traders/products',
                         resource_type: 'image',
+                        timeout: 120000,
                     },
                     (error, result) => {
                         if (error) {
+                            console.error(
+                                'CLOUDINARY ERROR:',
+                                error
+                            );
+
                             reject(error);
                             return;
                         }
 
                         if (!result) {
                             reject(
-                                new Error('Cloudinary returned no result')
+                                new Error(
+                                    'Cloudinary returned no result'
+                                )
                             );
+
                             return;
                         }
 
@@ -54,6 +66,7 @@ export async function POST(request: Request) {
                     }
                 )
                 .end(buffer);
+
         });
 
         return NextResponse.json({

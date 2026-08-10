@@ -7,8 +7,6 @@ export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
     try {
-        await connectDB();
-
         const { email, password } = await request.json();
 
         if (!email || !password) {
@@ -21,7 +19,10 @@ export async function POST(request: Request) {
             );
         }
 
+        await connectDB();
+
         const admin = await Admin.findOne({ email });
+        console.log('Admin found:', !!admin);
 
         if (!admin) {
             return NextResponse.json(
@@ -37,6 +38,8 @@ export async function POST(request: Request) {
             password,
             admin.password
         );
+
+        console.log('Password valid:', isPasswordValid);
 
         if (!isPasswordValid) {
             return NextResponse.json(
@@ -64,12 +67,17 @@ export async function POST(request: Request) {
         });
 
         return response;
-
     } catch (error) {
+        console.error('ADMIN LOGIN ERROR:', error);
+
         return NextResponse.json(
             {
                 success: false,
                 message: 'Login failed',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Unknown error',
             },
             { status: 500 }
         );

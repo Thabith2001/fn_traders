@@ -4,11 +4,14 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { links } from '@/data/links';
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+
+    const pathname = usePathname();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -26,11 +29,19 @@ const Header = () => {
         setIsOpen(false);
     };
 
+    const isActive = (path: string) => {
+        if (path === '/') {
+            return pathname === '/';
+        }
+
+        return pathname.startsWith(path);
+    };
+
     return (
         <header
-            className={`fixed left-0 top-0 z-50 w-full  transition-all duration-300 ${
+            className={`fixed left-0 top-0 z-50 w-full transition-all duration-300 ${
                 isScrolled || isOpen
-                    ? 'bg-sky-200/20 shadow-md'
+                    ? 'bg-sky-200/20 shadow-md backdrop-blur-md'
                     : 'bg-transparent'
             }`}
         >
@@ -53,15 +64,30 @@ const Header = () => {
 
                 {/* Desktop Navigation */}
                 <nav className="hidden items-center gap-8 md:flex">
-                    {links.map((link, index) => (
-                        <Link
-                            key={index}
-                            href={link.path}
-                            className="text-lg text-slate-700 transition hover:text-sky-700 hover:font-bold"
-                        >
-                            {link.name}
-                        </Link>
-                    ))}
+                    {links.map((link) => {
+                        const active = isActive(link.path);
+
+                        return (
+                            <Link
+                                key={link.path}
+                                href={link.path}
+                                className={`relative text-lg transition ${
+                                    active
+                                        ? 'font-bold text-sky-800'
+                                        : 'text-slate-700 hover:text-sky-700'
+                                }`}
+                            >
+                                {link.name}
+
+                                {/* Active underline */}
+                                <span
+                                    className={`absolute -bottom-2 left-0 h-0.5 bg-sky-700 transition-all duration-300 ${
+                                        active ? 'w-full' : 'w-0'
+                                    }`}
+                                />
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 {/* Desktop CTA */}
@@ -72,7 +98,7 @@ const Header = () => {
                     Get a Quote
                 </Link>
 
-                {/* Mobile Menu Button */}
+                {/* Mobile Button */}
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
@@ -93,21 +119,29 @@ const Header = () => {
                 }`}
             >
                 <nav className="flex flex-col px-5 py-5">
-                    {links.map((link, index) => (
-                        <Link
-                            key={index}
-                            href={link.path}
-                            onClick={closeMenu}
-                            className="border-b border-slate-100 py-3 font-bold text-lg text-slate-700 transition hover:pl-2 hover:text-sky-800"
-                        >
-                            {link.name}
-                        </Link>
-                    ))}
+                    {links.map((link) => {
+                        const active = isActive(link.path);
+
+                        return (
+                            <Link
+                                key={link.path}
+                                href={link.path}
+                                onClick={closeMenu}
+                                className={`border-b border-slate-100 py-3 text-lg transition ${
+                                    active
+                                        ? 'border-l-4 border-l-sky-700 bg-sky-50 pl-3 font-bold text-sky-800'
+                                        : 'font-medium text-slate-700 hover:pl-2 hover:text-sky-800'
+                                }`}
+                            >
+                                {link.name}
+                            </Link>
+                        );
+                    })}
 
                     <Link
                         href="/contact"
                         onClick={closeMenu}
-                        className="mt-5 rounded-full bg-sky-800 px-5 py-3 text-center font-semibold text-white transition hover:text-sky-700"
+                        className="mt-5 rounded-full bg-sky-800 px-5 py-3 text-center font-semibold text-white transition hover:bg-sky-700"
                     >
                         Get a Quote
                     </Link>
